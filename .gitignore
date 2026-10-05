@@ -1,3 +1,13 @@
 public/
 resources/_gen/
 .hugo_build.lock
+
+# 子应用源码（独立仓库管理，不进主站仓库）
+apps/
+
+# Node / 构建产物
+node_modules/
+dist/
+.wrangler/
+.sites-runtime/
+.vinext/

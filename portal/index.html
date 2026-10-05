@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Cassial</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%237655dc'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>C</text></svg>">
+<style>
+:root{
+  --background:#f7f8fc;--foreground:#302d43;--card:#fff;
+  --primary:#7655dc;--primary-hover:#6b49c9;
+  --muted-foreground:#858394;--border:#eae8f1;--input:#e7e5ee;
+  --ring:#b1a0e6;--radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--background);color:var(--foreground);font-size:14px;line-height:1.6;
+  min-height:100vh;display:flex;flex-direction:column;
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;-webkit-tap-highlight-color:transparent}
+input{font:inherit;outline:none}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #b4a0ec;outline-offset:2px}
+
+/* ---------- 密码门 ---------- */
+#gate{
+  position:fixed;inset:0;z-index:50;background:var(--background);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+#gate[hidden]{display:none}
+.gate-card{
+  background:var(--card);border:1px solid var(--border);border-radius:20px;
+  padding:44px 40px 36px;width:100%;max-width:380px;text-align:center;
+  box-shadow:0 8px 40px rgba(118,85,220,.08);
+}
+.gate-icon{
+  width:56px;height:56px;border-radius:16px;background:var(--primary);color:#fff;
+  display:grid;place-items:center;margin:0 auto 22px;box-shadow:0 6px 16px rgba(118,85,220,.25);
+}
+.gate-card h1{font-size:22px;font-weight:650;letter-spacing:.5px}
+.gate-card .sub{font-size:13px;color:var(--muted-foreground);margin:8px 0 26px}
+.gate-form{display:flex;flex-direction:column;gap:12px}
+.gate-form input{
+  border:1px solid var(--input);border-radius:10px;min-height:46px;
+  padding:10px 14px;font-size:14px;background:#fbfafc;width:100%;
+}
+.gate-form input:focus{border-color:#9878e9;box-shadow:0 0 0 3px rgba(118,85,220,.06)}
+.gate-form button{
+  min-height:46px;border-radius:10px;background:var(--primary);color:#fff;
+  font-size:14px;font-weight:500;transition:background .17s;
+}
+.gate-form button:hover{background:var(--primary-hover)}
+.gate-error{font-size:12px;color:#c55163;min-height:18px;margin-top:4px}
+.gate-card.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ---------- 主体 ---------- */
+#site{flex:1;display:flex;flex-direction:column}
+#site[hidden]{display:none}
+.container{width:100%;max-width:960px;margin:0 auto;padding:0 24px}
+header.site-header{padding:56px 0 8px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-mark{
+  width:46px;height:46px;border-radius:13px;background:var(--primary);color:#fff;
+  display:grid;place-items:center;font-size:22px;font-weight:700;
+  box-shadow:0 5px 12px rgba(118,85,220,.2);
+}
+.brand h1{font-size:26px;font-weight:700;letter-spacing:1px}
+.brand .en{display:block;font-size:10px;letter-spacing:1.6px;color:#a09aa9;font-weight:500}
+header .tagline{color:var(--muted-foreground);font-size:14px;margin-top:14px;max-width:520px}
+
+.section-title{
+  font-size:12px;color:#aaa5b5;letter-spacing:1px;margin:44px 0 16px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-title::after{content:"";flex:1;height:1px;background:var(--border)}
+
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;padding-bottom:20px}
+.app-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px 22px;display:flex;flex-direction:column;gap:14px;position:relative;
+  transition:box-shadow .2s,transform .2s,border-color .2s;
+}
+a.app-card:hover{box-shadow:0 10px 30px rgba(118,85,220,.12);transform:translateY(-2px);border-color:#ddd3f3}
+.app-head{display:flex;align-items:center;gap:13px}
+.app-icon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex-shrink:0}
+.app-name{font-size:17px;font-weight:650}
+.app-en{font-size:10px;letter-spacing:1.2px;color:#a09aa9;display:block;font-weight:500}
+.app-desc{font-size:13px;color:var(--muted-foreground);flex:1}
+.app-foot{display:flex;align-items:center;justify-content:space-between}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;background:#f0edf9;color:#6c4ccc;font-weight:500}
+.badge.soon{background:#f5f4f7;color:#a5a1b0}
+.app-arrow{color:#b1a9bb;transition:color .2s,transform .2s}
+a.app-card:hover .app-arrow{color:var(--primary);transform:translateX(3px)}
+.app-card.soon{border-style:dashed;background:transparent}
+
+footer{border-top:1px solid var(--border);padding:22px 0;color:#b7b1c0;font-size:12px}
+footer .container{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+footer button{background:none;color:#b7b1c0;font-size:12px;display:inline-flex;align-items:center;gap:5px}
+footer button:hover{color:var(--primary)}
+
+@media(max-width:520px){
+  header.site-header{padding:40px 0 4px}
+  .apps{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- 密码门 -->
+<div id="gate">
+  <div class="gate-card" id="gateCard">
+    <div class="gate-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <h1>Cassial</h1>
+    <p class="sub">这是私人站点，请输入访问密码</p>
+    <form class="gate-form" id="gateForm">
+      <input type="password" id="gateInput" placeholder="访问密码" autocomplete="current-password" autofocus>
+      <button type="submit">进入</button>
+      <div class="gate-error" id="gateError"></div>
+    </form>
+  </div>
+</div>
+
+<!-- 站点主体 -->
+<div id="site" hidden>
+  <div class="container">
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-mark">C</span>
+        <h1>Cassial<span class="en">CASSIAL.SITE</span></h1>
+      </div>
+      <p class="tagline">我的个人应用中心。这里收纳了我日常使用的各种小应用，点击卡片即可进入。</p>
+    </header>
+
+    <main>
+      <div class="section-title">我的应用</div>
+      <div class="apps">
+        <a class="app-card" href="https://jizhang.cassial.site">
+          <div class="app-head">
+            <span class="app-icon" style="background:#7655dc15;color:#7655dc">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+            </span>
+            <div>
+              <span class="app-name">简账</span>
+              <span class="app-en">SIMPLE LEDGER</span>
+            </div>
+          </div>
+          <p class="app-desc">简洁好用的个人记账应用：收支记录、消费分析、预算管理、消费日历，让每一笔钱都有数。</p>
+          <div class="app-foot">
+            <span class="badge">已上线</span>
+            <svg class="app-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+
+        <div class="app-card soon">
+          <div class="app-head">
+            <span class="app-icon" style="background:#85839415;color:#a5a1b0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            </span>
+            <div>
+              <span class="app-name">更多应用</span>
+              <span class="app-en">COMING SOON</span>
+            </div>
+          </div>
+          <p class="app-desc">后续的应用会陆续出现在这里，每个应用都有自己独立的子域名。</p>
+          <div class="app-foot">
+            <span class="badge soon">筹备中</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <div class="container">
+      <span>© 2026 Cassial · cassial.site</span>
+      <button id="logoutBtn" type="button">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
+        退出登录
+      </button>
+    </div>
+  </footer>
+</div>
+
+<script>
+// 访问密码的 SHA-256 哈希（明文密码不出现在代码中）
+// 临时密码：cassial —— 待用户提供正式密码后替换此哈希
+const PASSWORD_SHA256 = '008186171e52e73ac9a7a0646bf47ec543f165be11775dc69fed3edbe144f8db';
+const SESSION_KEY = 'cassial_gate_v1';
+
+const gate = document.getElementById('gate');
+const site = document.getElementById('site');
+const form = document.getElementById('gateForm');
+const input = document.getElementById('gateInput');
+const error = document.getElementById('gateError');
+const gateCard = document.getElementById('gateCard');
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function unlock() {
+  gate.hidden = true;
+  site.hidden = false;
+}
+
+if (sessionStorage.getItem(SESSION_KEY) === 'ok') {
+  unlock();
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  error.textContent = '';
+  const hash = await sha256(input.value);
+  if (hash === PASSWORD_SHA256) {
+    sessionStorage.setItem(SESSION_KEY, 'ok');
+    unlock();
+  } else {
+    error.textContent = '密码不正确，请重试';
+    gateCard.classList.remove('shake');
+    void gateCard.offsetWidth;
+    gateCard.classList.add('shake');
+    input.select();
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+});
+</script>
+</body>
+</html>
