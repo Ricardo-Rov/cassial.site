@@ -25,6 +25,11 @@ input{font:inherit;outline:none}
 button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #b4a0ec;outline-offset:2px}
 
 /* ---------- 密码门 ---------- */
+#pwDialog{
+  position:fixed;inset:0;z-index:60;background:rgba(48,45,67,.35);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+#pwDialog[hidden]{display:none}
 #gate{
   position:fixed;inset:0;z-index:50;background:var(--background);
   display:flex;align-items:center;justify-content:center;padding:20px;
@@ -178,19 +183,46 @@ footer button:hover{color:var(--primary)}
   <footer>
     <div class="container">
       <span>© 2026 Cassial · cassial.site</span>
-      <button id="logoutBtn" type="button">
+      <span style="display:inline-flex;gap:18px">
+        <button id="changePwBtn" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          修改密码
+        </button>
+        <button id="logoutBtn" type="button">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg>
         退出登录
       </button>
+      </span>
     </div>
   </footer>
 </div>
 
+<!-- 修改密码对话框 -->
+<div id="pwDialog" hidden>
+  <div class="gate-card" style="max-width:360px">
+    <h1 style="font-size:18px">修改访问密码</h1>
+    <p class="sub" style="margin-bottom:20px">仅对当前浏览器生效</p>
+    <form class="gate-form" id="pwForm">
+      <input type="password" id="pwCurrent" placeholder="当前密码" autocomplete="current-password" required>
+      <input type="password" id="pwNext" placeholder="新密码（至少 4 位）" autocomplete="new-password" required>
+      <input type="password" id="pwConfirm" placeholder="再输一遍新密码" autocomplete="new-password" required>
+      <button type="submit">确认修改</button>
+      <button type="button" id="pwCancel" style="background:none;color:#858394">取消</button>
+      <div class="gate-error" id="pwError"></div>
+    </form>
+  </div>
+</div>
+
 <script>
 // 访问密码的 SHA-256 哈希（明文密码不出现在代码中）
-// 临时密码：cassial —— 待用户提供正式密码后替换此哈希
+// 初始密码：cassial —— 用户修改后，新哈希存在浏览器 localStorage
 const PASSWORD_SHA256 = '008186171e52e73ac9a7a0646bf47ec543f165be11775dc69fed3edbe144f8db';
 const SESSION_KEY = 'cassial_gate_v1';
+const HASH_KEY = 'cassial_gate_hash';
+
+function effectiveHash() {
+  return localStorage.getItem(HASH_KEY) || PASSWORD_SHA256;
+}
 
 const gate = document.getElementById('gate');
 const site = document.getElementById('site');
@@ -217,7 +249,7 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   error.textContent = '';
   const hash = await sha256(input.value);
-  if (hash === PASSWORD_SHA256) {
+  if (hash === effectiveHash()) {
     sessionStorage.setItem(SESSION_KEY, 'ok');
     unlock();
   } else {
@@ -232,6 +264,51 @@ form.addEventListener('submit', async (e) => {
 document.getElementById('logoutBtn').addEventListener('click', () => {
   sessionStorage.removeItem(SESSION_KEY);
   location.reload();
+});
+
+// ---------- 修改密码 ----------
+const pwDialog = document.getElementById('pwDialog');
+const pwError = document.getElementById('pwError');
+
+document.getElementById('changePwBtn').addEventListener('click', () => {
+  pwDialog.hidden = false;
+  document.getElementById('pwCurrent').focus();
+});
+document.getElementById('pwCancel').addEventListener('click', () => {
+  pwDialog.hidden = true;
+  pwError.textContent = '';
+  document.getElementById('pwForm').reset();
+});
+pwDialog.addEventListener('click', (e) => {
+  if (e.target === pwDialog) document.getElementById('pwCancel').click();
+});
+
+document.getElementById('pwForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  pwError.textContent = '';
+  const current = document.getElementById('pwCurrent').value;
+  const next = document.getElementById('pwNext').value;
+  const confirm = document.getElementById('pwConfirm').value;
+
+  if (await sha256(current) !== effectiveHash()) {
+    pwError.textContent = '当前密码不正确';
+    return;
+  }
+  if (next.length < 4) {
+    pwError.textContent = '新密码至少 4 位';
+    return;
+  }
+  if (next !== confirm) {
+    pwError.textContent = '两次输入的新密码不一致';
+    return;
+  }
+  localStorage.setItem(HASH_KEY, await sha256(next));
+  pwError.style.color = '#499d86';
+  pwError.textContent = '密码已修改，下次访问请使用新密码';
+  setTimeout(() => {
+    document.getElementById('pwCancel').click();
+    pwError.style.color = '';
+  }, 1200);
 });
 </script>
 </body>
